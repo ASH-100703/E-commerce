@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Cart{% endblock %}
+{% block content %}
+<h2>Your Cart</h2>
+<ul class="cart-list">
+    {% if cart_items %}
+        {% for item_data in cart_items %}
+            {% set item = item_data.product %}
+            {% set quantity = item_data.quantity %}
+            <li>
+                <div class="item-details">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                    {{ item.name }} - ${{ "%.2f"|format(item.price) }} (x{{ quantity }})
+                </div>
+                <!-- Decrease Quantity -->
+                <form method="GET" action="{{ url_for('decrease_quantity', product_id=item.id) }}" style="display:inline;">
+                    <button type="submit">−</button>
+                </form>
+                <!-- Quantity Input -->
+                <form method="POST" action="{{ url_for('update_quantity', product_id=item.id) }}" style="display:inline;">
+                    <input type="number" name="quantity" value="{{ quantity }}" min="1" style="width:40px; text-align:center;">
+                </form>
+                <!-- Increase Quantity -->
+                <form method="GET" action="{{ url_for('increase_quantity', product_id=item.id) }}" style="display:inline;">
+                    <button type="submit">+</button>
+                </form>
+                <a href="{{ url_for('remove_from_cart', product_id=item.id) }}" class="button remove-button">Remove</a>
+            </li>
+        {% endfor %}
+        <p class="total">Total: ${{ "%.2f"|format(total_price) }}</p>
+        <div class="checkout-container">
+            <a href="{{ url_for('checkout') }}" class="button checkout-button">Proceed to Checkout</a>
+        </div>
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+</ul>
+{% endblock %}
