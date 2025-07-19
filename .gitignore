@@ -1,0 +1,36 @@
+# Python
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/ # If you use 'env' instead of 'venv'
+
+# Flask-specific
+instance/ # Contains the site.db and other instance-specific data
+.flaskenv
+
+# Database files
+*.sqlite
+*.db # Catches site.db
+*.db-*
+/var/ # For specific server data if applicable
+
+# Editors and IDEs
+.vscode/ # VS Code settings and launch configurations
+.idea/ # PyCharm/IntelliJ IDEA settings
+*.sublime-project
+*.sublime-workspace
+.DS_Store # macOS specific
+Thumbs.db # Windows specific
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# Environment variables (if you used .env files, though not in your current setup)
+.env
