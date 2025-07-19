@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {# Jinja2: Inherits the structure from base.html #}
+
+{% block title %}Shop All Products{% endblock %} {# Jinja2: Overrides the title block in base.html #}
+
+{% block content %} {# Jinja2: Inserts this content into the 'content' block in base.html #}
+    <h2>Our Products</h2>
+    <div class="product-grid">
+        {% for product in products %} {# Jinja2: Loops through the 'products' list passed from app.py #}
+            <div class="product-card">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                <h3><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a></h3> {# Jinja2: Links to product detail page #}
+                <p>${{ "%.2f"|format(product.price) }}</p> {# Jinja2: Displays price, formatted to two decimal places #}
+                <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="button">Add to Cart</a> {# Jinja2: Links to add product to cart #}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
