@@ -63,3 +63,12 @@ First, clone the project repository to your local machine:
 ```bash
 git clone [https://github.com/ASH-100703/e-commerce.git](https://github.com/ASH-100703/e-commerce.git)
 cd e-commerce
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+.\venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
