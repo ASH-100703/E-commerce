@@ -3,29 +3,29 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, SubmitField
-from wtforms.validators import DataRequired, Email
+from wtforms.validators import DataRequired, Email, ValidationError
 from datetime import datetime
 import os
 import secrets
+from dotenv import load_dotenv
+import bleach
 
 app = Flask(__name__)
 
-# --- IMPORTANT: Replace with a truly strong, random key ---
+load_dotenv()
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# Add upload folder configuration
 app.config['UPLOAD_FOLDER'] = 'static/images'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 
 db = SQLAlchemy(app)
 
-# Models
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String(200), nullable=True)  # Store filename or URL
+    image_url = db.Column(db.String(200), nullable=True)
     description = db.Column(db.Text, nullable=True)
 
     def __repr__(self):
@@ -33,11 +33,10 @@ class Product(db.Model):
 
     def save_image(self, image):
         if image:
-            # Generate a unique filename
             filename = secrets.token_hex(8) + '.' + image.filename.split('.')[-1]
             image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             image.save(image_path)
-            self.image_url = filename  # Store the filename
+            self.image_url = filename
             return True
         return False
 
@@ -50,7 +49,6 @@ class Order(db.Model):
     items = db.Column(db.JSON, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Forms
 class ProductForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     price = StringField('Price', validators=[DataRequired()])
@@ -58,20 +56,26 @@ class ProductForm(FlaskForm):
     description = TextAreaField('Description', validators=[DataRequired()])
     submit = SubmitField('Add Product')
 
+    def validate_price(self, price):
+        try:
+            value = float(price.data)
+            if value <= 0:
+                raise ValueError('Price must be positive.')
+        except (ValueError, TypeError):
+            raise ValidationError('Price must be a valid number greater than 0.')
+
 class CheckoutForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     address = TextAreaField('Address', validators=[DataRequired()])
     submit = SubmitField('Place Order')
 
-# Context Processor
 @app.context_processor
 def inject_cart_count():
     cart = session.get('cart', {})
     count = sum(cart.values()) if cart else 0
     return dict(cart_count=count)
 
-# Routes
 @app.route('/')
 def home():
     products = Product.query.all()
@@ -104,7 +108,9 @@ def remove_from_cart(product_id):
         cart.pop(pid, None)
         session['cart'] = cart
         session.modified = True
-    return redirect(url_for('cart'))
+    if cart:
+        return redirect(url_for('cart'))
+    return redirect(url_for('home'))
 
 @app.route('/cart')
 def cart():
@@ -175,9 +181,9 @@ def checkout():
                 cart_items.append({'name': product.name, 'quantity': quantity, 'price': product.price})
                 total_price += product.price * quantity
         order = Order(
-            name=form.name.data,
-            email=form.email.data,
-            address=form.address.data,
+            name=bleach.clean(form.name.data),
+            email=bleach.clean(form.email.data),
+            address=bleach.clean(form.address.data),
             total_price=total_price,
             items=cart_items
         )
@@ -185,31 +191,14 @@ def checkout():
         db.session.commit()
         session.pop('cart', None)
         session.modified = True
-        flash(f"Thank you {form.name.data}, your order has been placed!", "success")
+        flash(f"Thank you {bleach.clean(form.name.data)}, your order has been placed!", "success")
         return redirect(url_for('thank_you'))
-    flash(None)  # Clear flash messages to avoid duplication
+    # flash(None)
     return render_template('checkout.html', form=form)
 
 @app.route('/thank_you')
 def thank_you():
     return render_template('thank_you.html')
-
-@app.route('/add_product', methods=['GET', 'POST'])
-def add_product():
-    form = ProductForm()
-    if form.validate_on_submit():
-        product = Product(
-            name=form.name.data,
-            price=float(form.price.data),
-            description=form.description.data
-        )
-        if form.image.data:
-            product.save_image(form.image.data)
-        db.session.add(product)
-        db.session.commit()
-        flash('Product added successfully!', 'success')
-        return redirect(url_for('home'))
-    return render_template('add_product.html', form=form)
 
 if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
