@@ -8,30 +8,30 @@
 </head>
 <body>
     <header>
-        <nav>
+        <nav class="left">
             <a href="{{ url_for('home') }}">Home</a>
-            {# --- IMPORTANT: This now uses cart_count from context processor --- #}
-            <a href="{{ url_for('cart') }}">Cart ({{ cart_count }})</a>
         </nav>
         <h1>My Awesome Shop</h1>
+        <nav class="right">
+            <a href="{{ url_for('cart') }}">Cart ({{ cart_count }})</a>
+        </nav>
     </header>
 
     <main>
-        {# Flash messages display block #}
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+            {% if messages %} {# <--- ADDED THIS LINE #}
                 <ul class="flashes">
                     {% for category, message in messages %}
                         <li class="{{ category }}">{{ message }}</li>
                     {% endfor %}
                 </ul>
-            {% endif %}
+            {% endif %} {# <--- ADDED THIS LINE #}
         {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
     <footer>
-        <p>&copy; 2025 My E-commerce Site</p>
+        <p>&copy; 2025 My Awesome Shop. All rights reserved.</p>
     </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
