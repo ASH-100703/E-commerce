@@ -4,27 +4,22 @@
 <h2>Your Cart</h2>
 <ul class="cart-list">
     {% if cart_items %}
-        {% for item_data in cart_items %}
-            {% set item = item_data.product %}
-            {% set quantity = item_data.quantity %}
+        {% for item in cart_items %}
             <li>
                 <div class="item-details">
-                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
-                    {{ item.name }} - ${{ "%.2f"|format(item.price) }} (x{{ quantity }})
+                    <img src="{{ url_for('static', filename='images/' + item.product.image_url) if item.product.image_url else 'https://via.placeholder.com/150' }}" alt="{{ item.product.name }}">
+                    {{ item.product.name }} - ${{ "%.2f"|format(item.product.price) }} (x{{ item.quantity }})
                 </div>
-                <!-- Decrease Quantity -->
-                <form method="GET" action="{{ url_for('decrease_quantity', product_id=item.id) }}" style="display:inline;">
+                <form method="GET" action="{{ url_for('decrease_quantity', product_id=item.product.id) }}" style="display:inline;">
                     <button type="submit">−</button>
                 </form>
-                <!-- Quantity Input -->
-                <form method="POST" action="{{ url_for('update_quantity', product_id=item.id) }}" style="display:inline;">
-                    <input type="number" name="quantity" value="{{ quantity }}" min="1" style="width:40px; text-align:center;">
+                <form method="POST" action="{{ url_for('update_quantity', product_id=item.product.id) }}" style="display:inline;" onchange="this.submit()">
+                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width:40px; text-align:center;">
                 </form>
-                <!-- Increase Quantity -->
-                <form method="GET" action="{{ url_for('increase_quantity', product_id=item.id) }}" style="display:inline;">
+                <form method="GET" action="{{ url_for('increase_quantity', product_id=item.product.id) }}" style="display:inline;">
                     <button type="submit">+</button>
                 </form>
-                <a href="{{ url_for('remove_from_cart', product_id=item.id) }}" class="button remove-button">Remove</a>
+                <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="button remove-button">Remove</a>
             </li>
         {% endfor %}
         <p class="total">Total: ${{ "%.2f"|format(total_price) }}</p>
