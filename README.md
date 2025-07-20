@@ -69,18 +69,26 @@ python -m venv venv
 
 ### Activate the virtual environment
 #### On Windows:
+```bash
 .\venv\Scripts\activate
+```
 #### On macOS/Linux:
+``` bash
 source venv/bin/activate
+```
 
 ### Install Dependencies
+```bash
 pip install -r requirements.txt
+```
 
 ### Set Enviornment Variables
 This project uses environment variables for sensitive information like the SECRET_KEY.
 Create a file named .env in the root directory of your project (the same directory as app.py).
 Add your secret key to this file:
-SECRET_KEY=your_very_secret_random_string_here
+
+***SECRET_KEY=your_very_secret_random_string_here***
+
 Replace your_very_secret_random_string_here with a long, random string. You can generate one in Python using import secrets; secrets.token_hex(16)
 
-## Enjoy your simple and basic E-commerce app now!!! 
+## Enjoy your simple and basic E-commerce app now !!! 
