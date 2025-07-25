@@ -196,6 +196,7 @@ def checkout():
     # flash(None)
     return render_template('checkout.html', form=form)
 
+# Added a thank you page for successful completion of order
 @app.route('/thank_you')
 def thank_you():
     return render_template('thank_you.html')
