@@ -213,3 +213,4 @@ if __name__ == '__main__':
             db.session.add_all([product1, product2, product3])
             db.session.commit()
     app.run(debug=True)
+
